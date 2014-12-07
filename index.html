@@ -1,44 +1,20 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Voila.GitHub.io by voila</title>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Voila.GitHub.io</h1>
-        <p></p>
+<h1 id="weather-api-in-ocaml">Weather API in OCaml</h1>
+
+<p>I enjoyed Peter Bourgonâ€™s <a href="http://howistart.org/posts/go/1">How I Start: Go</a> article. Writing Go seemed easy and fun. It made me wonder: how fun would it be in OCaml? Thereâ€™s only one way to find out, read on!  (This post assumes a basic knowledge of OCaml.) </p>
+
+<p><em>Note: Iâ€™ve copied a lot from the original post, ideas and words. Any mistake are my own.</em></p>
 
 
-        <p class="view"><a href="https://github.com/voila">View My GitHub Profile</a></p>
 
-      </header>
-      <section>
-        <h1>
-<a id="weather-api-in-ocaml" class="anchor" href="#weather-api-in-ocaml" aria-hidden="true"><span class="octicon octicon-link"></span></a>Weather API in OCaml</h1>
+<h2 id="what-is-ocaml">What is OCaml ?</h2>
 
-<p>I enjoyed Peter Bourgon's <a href="http://howistart.org/posts/go/1">How I Start</a>, Go seemed easy and fun. It made me wonder, how fun or easy would it be in OCaml? The only one way to find out is to do it!  (This post is not an OCaml tutorial, but I hope it gives an idea of what writing code in OCaml is like).    </p>
+<p>OCaml belongs to the ML language family (whose roots go back to the 70â€™s), it is used  in compilers, static analysis tools, and proof systems. <br>
+Ocaml is a statically typed, functional language with some imperative features, it has a powerful module system, and an object system.</p>
 
-<p><em>Note: I've copied a lot from the original post, ideas and words. Any mistake or error are my own.</em></p>
+<p>OCaml is not very trendy. Yet recently, a great introductory <a href="https://realworldocaml.org/">book</a> came out, and a new <a href="http://ocaml.org/">website</a> launched. It also make the news, sometimes (<a href="http://awards.acm.org/software_system/">Coq</a>, <a href="https://code.facebook.com/posts/264544830379293/hack-a-new-programming-language-for-hhvm/">Hack</a> and <a href="https://code.facebook.com/posts/1505962329687926/flow-a-new-static-type-checker-for-javascript/">Flow</a>).</p>
 
-<h2>
-<a id="what-is-ocaml-" class="anchor" href="#what-is-ocaml-" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is OCaml ?</h2>
-
-<p>OCaml belongs to the ML language family (whose roots go back to the 70's), it has been used  in compilers, static analysis tools, and proof systems.
-It is typed, functional with some imperative features, has a powerful module system, and an object system.</p>
-
-<p>OCaml is not super trendy. Yet recently, a great introductory <a href="https://realworldocaml.org/">book</a> came out, and a new <a href="http://ocaml.org/">website</a> launched. It's also made the news (<a href="http://awards.acm.org/software_system/">Coq</a>, <a href="https://code.facebook.com/posts/264544830379293/hack-a-new-programming-language-for-hhvm/">Hack</a> and <a href="https://code.facebook.com/posts/1505962329687926/flow-a-new-static-type-checker-for-javascript/">Flow</a>).</p>
-
-<p>Let's use OCaml to build a backend service for a web app.</p>
+<p>Like Peter, we will build a backend service for a web app.</p>
 
 <ol>
 <li><a href="#setting-up-your-environment">Setting up your environment</a></li>
@@ -46,477 +22,579 @@ It is typed, functional with some imperative features, has a powerful module sys
 <li><a href="#making-a-web-server">Making a web server</a></li>
 <li><a href="#adding-more-routes">Adding more routes</a></li>
 <li><a href="#querying-multiple-apis">Querying multiple APIs</a></li>
+<li><a href="#using-modules">Using Modules</a></li>
 <li><a href="#conclusion">Conclusion</a></li>
 <li><a href="#further-exercises">Further exercises</a></li>
 </ol>
 
-<h2>
-<a id="setting-up-your-environment" class="anchor" href="#setting-up-your-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setting up your environment</h2>
+
+
+<h2 id="setting-up-your-environment">Setting up your environment</h2>
 
 <p>The first step is, of course, to install <a href="http://opam.ocaml.org/doc/Quick_Install.html">OCaml and OPAM</a> (a package manager for OCaml). </p>
 
-<p>Here's how to go about it, on a recent Ubuntu:</p>
+<p>Hereâ€™s how to go about it, on a recent Ubuntu:</p>
 
-<pre><code>$ sudo apt-get install software-properties-common 
-$ sudo apt-get install m4 
-$ sudo apt-get install make
-$ sudo add-apt-repository ppa:avsm/ppa
-$ sudo apt-get update
-$ sudo apt-get install ocaml ocaml-native-compilers camlp4-extra opam
-$ opam init
-</code></pre>
 
-<p>Once you're done, this should work:</p>
 
-<pre><code>$ ocaml -version
-The OCaml toplevel, version 4.02.1
-</code></pre>
+<pre class="prettyprint"><code class=" hljs lasso">$ sudo apt<span class="hljs-attribute">-get</span> install software<span class="hljs-attribute">-properties</span><span class="hljs-attribute">-common</span> 
+$ sudo apt<span class="hljs-attribute">-get</span> install m4 
+$ sudo apt<span class="hljs-attribute">-get</span> install make
+$ sudo add<span class="hljs-attribute">-apt</span><span class="hljs-attribute">-repository</span> ppa:avsm/ppa
+$ sudo apt<span class="hljs-attribute">-get</span> update
+$ sudo apt<span class="hljs-attribute">-get</span> install ocaml ocaml<span class="hljs-attribute">-native</span><span class="hljs-attribute">-compilers</span> camlp4<span class="hljs-attribute">-extra</span> opam
+$ opam init</code></pre>
 
-<p>There are a few options for editing OCaml code (Emacs, Vim, SublimeText, and <a href="https://code.facebook.com/posts/1505962329687926/flow-a-new-static-type-checker-for-javascript/">more</a>)
-Personally, I use Emacs with <a href="https://github.com/ocaml/tuareg">tuareg</a> and <a href="https://github.com/the-lambda-church/merlin">merlin</a></p>
+<p>Once youâ€™re done, this should work:</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs livecodeserver">$ ocaml -<span class="hljs-built_in">version</span>
+The OCaml toplevel, <span class="hljs-built_in">version</span> <span class="hljs-number">4.02</span><span class="hljs-number">.1</span></code></pre>
+
+<p>There are a few options for editing OCaml code (Emacs, Vim, SublimeText, and <a href="https://code.facebook.com/posts/1505962329687926/flow-a-new-static-type-checker-for-javascript/">more</a>). Personally, I use Emacs with <a href="https://github.com/ocaml/tuareg">tuareg</a> and <a href="https://github.com/the-lambda-church/merlin">merlin</a></p>
 
 <p>OCaml includes a bare bones top level, but you can use <a href="https://github.com/diml/utop">utop</a>, for a more capable one.</p>
 
-<h2>
-<a id="a-new-project" class="anchor" href="#a-new-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>A new project</h2>
+<h2 id="a-new-project">A new project</h2>
 
-<p>Create <code>hello.ml</code>, this will be our simplest OCaml program.</p>
+<p>Create a new file,  <code>hello.ml</code>, this will be our simplest OCaml program.</p>
 
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">let</span> _ <span class="pl-k">=</span> print_endline <span class="pl-s1"><span class="pl-pds">"</span>hello!<span class="pl-pds">"</span></span></pre></div>
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">let</span> _ = print_endline <span class="hljs-string">"hello!"</span></code></pre>
 
 <p>Compile and run:</p>
 
-<pre><code>$ ocamlbuild hello.native
-$ ./hello.native
-hello!
-</code></pre>
 
-<p>Easy!</p>
 
-<h2>
-<a id="making-a-web-server" class="anchor" href="#making-a-web-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Making a web server</h2>
+<pre class="prettyprint"><code class=" hljs ruby"><span class="hljs-variable">$ </span>ocamlbuild hello.native
+<span class="hljs-variable">$ </span>./hello.native
+hello!</code></pre>
 
-<p>Let's turn our "hello" program into a web server.</p>
+<p>Easy!  <a href="https://github.com/voila/weather_api_ocaml/tree/master/hello">All code</a></p>
 
-<p>Because the HTTP library I'm using (<a href="https://github.com/mirage/ocaml-cohttp">CoHTTP</a>) only support async code, we'll go straight into an asynchronous web server. With CoHTTP, we'll be using <a href="http://ocsigen.org/lwt/">Lwt</a>, a cooperative threads library.</p>
+<h2 id="making-a-web-server">Making a web server</h2>
+
+<p>Letâ€™s turn our â€œhelloâ€ program into a web server.</p>
+
+<p>Because the HTTP library Iâ€™m using (<a href="https://github.com/mirage/ocaml-cohttp">CoHTTP</a>) is asynchronous, weâ€™ll go straight into the asynchronous web server. With CoHTTP, weâ€™ll be using <a href="http://ocsigen.org/lwt/">Lwt</a>, a cooperative threads library.</p>
 
 <p>to install these two, do :</p>
 
-<pre><code>$ apt-get install libssl-dev
-$ opam install lwt.2.4.6 cohttp.0.12.0
-</code></pre>
+<pre class="prettyprint"><code class=" hljs ruby"><span class="hljs-variable">$ </span>apt-get install libssl-dev
+<span class="hljs-variable">$ </span>opam install lwt.<span class="hljs-number">2.4</span>.<span class="hljs-number">6</span> cohttp.<span class="hljs-number">0</span>.<span class="hljs-number">12.0</span></code></pre>
 
 <p>This should pull in all required dependencies</p>
 
-<p>Here's the full program for a simple 'hello' server.</p>
+<p>Hereâ€™s the full program for a simple â€˜helloâ€™ server.</p>
 
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">open</span> <span class="pl-s3">Lwt</span>
-<span class="pl-k">open</span> <span class="pl-s3">Cohttp</span>
-<span class="pl-k">open</span> <span class="pl-s3">Cohttp_lwt_unix</span>
 
-<span class="pl-k">let</span> <span class="pl-en">make_server</span> <span class="pl-v">()</span> <span class="pl-k">=</span>
-  <span class="pl-k">let</span> <span class="pl-en">callback</span> <span class="pl-v">conn_id</span> <span class="pl-v">req</span> <span class="pl-v">body</span> <span class="pl-k">=</span>
-    <span class="pl-k">let</span> uri <span class="pl-k">=</span> <span class="pl-mm">Request.</span>uri req <span class="pl-k">in</span>
-    <span class="pl-k">match</span> <span class="pl-mm">Uri.</span>path uri <span class="pl-k">with</span><span class="pl-k"></span>
-    <span class="pl-k">|</span> <span class="pl-c">"/"</span> -&gt; <span class="pl-mm">Server.</span>respond_string <span class="pl-ent">~status:</span><span class="pl-en">`OK</span> <span class="pl-ent">~body:</span><span class="pl-s1"><span class="pl-pds">"</span>hello!<span class="pl-c1">\n</span><span class="pl-pds">"</span></span> <span class="pl-c1">()</span>
-    <span class="pl-k">|</span> <span class="pl-c1">_</span> -&gt; <span class="pl-mm">Server.</span>respond_string <span class="pl-ent">~status:</span><span class="pl-en">`Not_found</span> <span class="pl-ent">~body:</span><span class="pl-s1"><span class="pl-pds">"</span>Route not found<span class="pl-pds">"</span></span> <span class="pl-c1">()</span>
-  <span class="pl-k">in</span>
-  <span class="pl-k">let</span> <span class="pl-en">conn_closed</span> <span class="pl-v">conn_id</span> <span class="pl-v">()</span> <span class="pl-k">=</span> <span class="pl-c1">()</span> <span class="pl-k">in</span>
-  <span class="pl-mm">Server.</span>create { <span class="pl-mm">Server.</span>callback; <span class="pl-mm">Server.</span>conn_closed }
 
-<span class="pl-k">let</span> _ <span class="pl-k">=</span>
-  <span class="pl-mm">Lwt_unix.</span>run (make_server <span class="pl-c1">()</span>)</pre></div>
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">open</span> Lwt
+<span class="hljs-keyword">open</span> Cohttp
+<span class="hljs-keyword">open</span> Cohttp_lwt_unix
+
+<span class="hljs-keyword">let</span> make_server () =
+  <span class="hljs-keyword">let</span> callback conn_id req body =
+    <span class="hljs-keyword">let</span> uri = Request.uri req <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">match</span> Uri.path uri <span class="hljs-keyword">with</span>
+    | <span class="hljs-string">"/"</span> -&gt; Server.respond_string ~status:`OK ~body:<span class="hljs-string">"hello!\n"</span> ()
+    | _ -&gt; Server.respond_string ~status:`Not_found ~body:<span class="hljs-string">"Route not found"</span> ()
+  <span class="hljs-keyword">in</span>
+  <span class="hljs-keyword">let</span> conn_closed conn_id () = () <span class="hljs-keyword">in</span>
+  Server.create { Server.callback; Server.conn_closed }
+
+<span class="hljs-keyword">let</span> _ =
+  Lwt_unix.run (make_server ())</code></pre>
 
 <p>First, we open 3 modules, so we can use unqualified identifiers (for instance, <code>Request.uri</code> instead of <code>Cohttp.Request.uri</code>):</p>
 
-<p>In <code>make_server()</code>, we create a server configured by 2 handler functions: <code>callback</code> to handle the request, and <code>conn_closed</code> to handle the end of the connection (here, we chose to do nothing).</p>
+<p>In <code>make_server()</code>, we create a server configured by 2 handler functions: <code>callback</code> handles the request, <code>conn_closed</code> handles the end of the connection (here, we chose to do nothing).</p>
 
-<p>callback takes a connection id, an HTTP request and a body. It dispatches on the request uri: "/" gets a hello response, anything else gets a 404.</p>
+<p><code>callback</code> takes a connection id, an HTTP request and a body. It dispatches on the request uri: â€œ/â€ gets a hello response, anything else gets a 404.</p>
 
-<p>the last expression is the program main entry,  <code>make_server</code> returns an Lwt thread.
-<code>Lwt_unix.run</code> runs this thread until it terminates</p>
+<p>the last expression is the program main entry,  <code>make_server</code> returns an Lwt thread. <br>
+<code>Lwt_unix.run</code> runs this thread until it terminates.</p>
 
 <p>To compile this program, we first create the following _tag file:</p>
 
-<pre><code>true: package(lwt), package(cohttp), package(cohttp.lwt)
-</code></pre>
+<pre class="prettyprint"><code class=" hljs lua"><span class="hljs-keyword">true</span>: <span class="hljs-built_in">package</span>(lwt), <span class="hljs-built_in">package</span>(cohttp), <span class="hljs-built_in">package</span>(cohttp.lwt)</code></pre>
 
-<p>It lists all the packages we're depending on
-Now that ocamlbuild can find the libraries we're using, we compile and run:</p>
+<p>It lists all the packages weâ€™re using. <br>
+Now ocamlbuild can find our dependencies, we can compile and run:</p>
 
-<pre><code>$ ocamlbuild -use-ocamlfind hello_server.native
-$ ./hello_server.native
-</code></pre>
+<pre class="prettyprint"><code class=" hljs actionscript">$ ocamlbuild -<span class="hljs-keyword">use</span>-ocamlfind hello_server.<span class="hljs-keyword">native</span>
+$ ./hello_server.<span class="hljs-keyword">native</span></code></pre>
 
 <p>To interact with the server, in another terminal or your browser, make an HTTP request:</p>
 
-<pre><code>$ curl http://localhost:8080
-hello!
-</code></pre>
 
-<p>That wasn't too bad!</p>
 
-<h2>
-<a id="adding-more-routes" class="anchor" href="#adding-more-routes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding more routes</h2>
+<pre class="prettyprint"><code class=" hljs cs">$ curl http:<span class="hljs-comment">//localhost:8080</span>
+hello!</code></pre>
+
+<p>That wasnâ€™t too bad! <a href="https://github.com/voila/weather_api_ocaml/tree/master/hello_server">All code</a></p>
+
+<h2 id="adding-more-routes">Adding more routes</h2>
 
 <p>We can do something more interesting than just say hello.</p>
 
-<p>Let's take a city as input, call out to a weather API, and forward a response with the temperature.
-The <a href="http://openweathermap.org/">OpenWeatherMap</a>
- provides a <a href="http://openweathermap.org/api">simple and free API</a>
- for <a href="http://openweathermap.org/current">current forecast info</a>,
- which we can <a href="http://api.openweathermap.org/data/2.5/weather?q=Tokyo">query by city</a>.
+<p>Letâ€™s take a city as input, call out to a weather API, and forward a response with the temperature. <br>
+The <a href="http://openweathermap.org/">OpenWeatherMap</a> <br>
+ provides a <a href="http://openweathermap.org/api">simple and free API</a> <br>
+ for <a href="http://openweathermap.org/current">current forecast info</a>, <br>
+ which we can <a href="http://api.openweathermap.org/data/2.5/weather?q=Tokyo">query by city</a>. <br>
 It returns responses like this (partially redacted):</p>
 
-<div class="highlight highlight-json"><pre>{
-    <span class="pl-s1"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Tokyo<span class="pl-pds">"</span></span>,
-    <span class="pl-s1"><span class="pl-pds">"</span>coord<span class="pl-pds">"</span></span>: {
-        <span class="pl-s1"><span class="pl-pds">"</span>lon<span class="pl-pds">"</span></span>: <span class="pl-c1">139.69</span>,
-        <span class="pl-s1"><span class="pl-pds">"</span>lat<span class="pl-pds">"</span></span>: <span class="pl-c1">35.69</span>
-    },
-    <span class="pl-s1"><span class="pl-pds">"</span>weather<span class="pl-pds">"</span></span>: [
+
+
+<pre class="prettyprint"><code class="language-json hljs ">{
+    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"Tokyo"</span></span>,
+    "<span class="hljs-attribute">coord</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">lon</span>": <span class="hljs-value"><span class="hljs-number">139.69</span></span>,
+        "<span class="hljs-attribute">lat</span>": <span class="hljs-value"><span class="hljs-number">35.69</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">weather</span>": <span class="hljs-value">[
         {
-            <span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>: <span class="pl-c1">803</span>,
-            <span class="pl-s1"><span class="pl-pds">"</span>main<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Clouds<span class="pl-pds">"</span></span>,
-            <span class="pl-s1"><span class="pl-pds">"</span>description<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>broken clouds<span class="pl-pds">"</span></span>,
-            <span class="pl-s1"><span class="pl-pds">"</span>icon<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>04n<span class="pl-pds">"</span></span>
-        }
-    ],
-    <span class="pl-s1"><span class="pl-pds">"</span>main<span class="pl-pds">"</span></span>: {
-        <span class="pl-s1"><span class="pl-pds">"</span>temp<span class="pl-pds">"</span></span>: <span class="pl-c1">296.69</span>,
-        <span class="pl-s1"><span class="pl-pds">"</span>pressure<span class="pl-pds">"</span></span>: <span class="pl-c1">1014</span>,
-        <span class="pl-s1"><span class="pl-pds">"</span>humidity<span class="pl-pds">"</span></span>: <span class="pl-c1">83</span>,
-        <span class="pl-s1"><span class="pl-pds">"</span>temp_min<span class="pl-pds">"</span></span>: <span class="pl-c1">295.37</span>,
-        <span class="pl-s1"><span class="pl-pds">"</span>temp_max<span class="pl-pds">"</span></span>: <span class="pl-c1">298.15</span>
-    }
-}</pre></div>
+            "<span class="hljs-attribute">id</span>": <span class="hljs-value"><span class="hljs-number">803</span></span>,
+            "<span class="hljs-attribute">main</span>": <span class="hljs-value"><span class="hljs-string">"Clouds"</span></span>,
+            "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"broken clouds"</span></span>,
+            "<span class="hljs-attribute">icon</span>": <span class="hljs-value"><span class="hljs-string">"04n"</span>
+        </span>}
+    ]</span>,
+    "<span class="hljs-attribute">main</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">temp</span>": <span class="hljs-value"><span class="hljs-number">296.69</span></span>,
+        "<span class="hljs-attribute">pressure</span>": <span class="hljs-value"><span class="hljs-number">1014</span></span>,
+        "<span class="hljs-attribute">humidity</span>": <span class="hljs-value"><span class="hljs-number">83</span></span>,
+        "<span class="hljs-attribute">temp_min</span>": <span class="hljs-value"><span class="hljs-number">295.37</span></span>,
+        "<span class="hljs-attribute">temp_max</span>": <span class="hljs-value"><span class="hljs-number">298.15</span>
+    </span>}
+</span>}</code></pre>
 
-<p>To stay close to the original Go code, we'll use <a href="https://github.com/mjambon/atdgen">atdgen</a>, a tool that generate OCaml code to (de)serialize JSON (a more light-weight alternative would be to directly use a JSON library like <a href="https://github.com/mjambon/yojson">yojson</a>).    </p>
+<p>To stay close to the original Go code, weâ€™ll use <a href="https://github.com/mjambon/atdgen">atdgen</a>, a tool that generates OCaml code to (de)serialize JSON (an alternative would be to use a JSON library like <a href="https://github.com/mjambon/yojson">yojson</a>.    </p>
 
-<p>First, let's install atdgen:</p>
+<p>First, letâ€™s install atdgen:</p>
 
-<pre><code>$ opam install atdgen
-</code></pre>
+<pre class="prettyprint"><code class=" hljs ruby"><span class="hljs-variable">$ </span>opam install atdgen</code></pre>
 
-<p>Next, in <code>openweathermap.atd</code>, we'll define the following types to specify what we want to deserialize from the JSON response:</p>
+<p>Next, in <code>openweathermap.atd</code>, weâ€™ll define the following types to specify what we want to deserialize from the JSON response:</p>
 
-<pre><code>type main = { temp: float }
-type weather = { main: main; name: string }
-</code></pre>
+
+
+<pre class="prettyprint"><code class=" hljs haskell"><span class="hljs-typedef"><span class="hljs-keyword">type</span> main = <span class="hljs-container">{ <span class="hljs-title">temp</span>: <span class="hljs-title">float</span> }</span></span>
+<span class="hljs-typedef"><span class="hljs-keyword">type</span> weather = <span class="hljs-container">{ <span class="hljs-title">main</span>: <span class="hljs-title">main</span>; <span class="hljs-title">name</span>: <span class="hljs-title">string</span> }</span></span></code></pre>
 
 <p>We can now use <code>atdgen</code> to generate the OCaml code: </p>
 
-<pre><code>atdgen -t openweathermap.atd
-atdgen -j openweathermap.atd
-</code></pre>
 
-<p>This creates 2 OCaml modules: <code>Openweathermap_t</code> and <code>Openweathermap_j</code>.
+
+<pre class="prettyprint"><code class=" hljs avrasm">atdgen -t openweathermap<span class="hljs-preprocessor">.atd</span>
+atdgen -j openweathermap<span class="hljs-preprocessor">.atd</span></code></pre>
+
+<p>This creates 2 OCaml modules: <code>Openweathermap_t</code> and <code>Openweathermap_j</code>. <br>
 Which we can use like this:</p>
 
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">let</span> weather <span class="pl-k">=</span> <span class="pl-mm">Openweathermap_j.</span>weather_of_string response <span class="pl-k">in</span> ...</pre></div>
 
-<p>Now let's write a function to query the API:</p>
 
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">let</span> <span class="pl-en">query</span> <span class="pl-v">city</span> <span class="pl-k">=</span> 
-  <span class="pl-k">let</span> <span class="pl-k">open</span> <span class="pl-s3">Openweathermap_j</span> <span class="pl-k">in</span>
-  <span class="pl-mm">Client.</span>get (<span class="pl-mm">Uri.</span>of_string 
-    (<span class="pl-s1"><span class="pl-pds">"</span>http://api.openweathermap.org/data/2.5/weather?q=<span class="pl-pds">"</span></span> <span class="pl-k">^</span> city))
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> (<span class="pl-v">_</span>, <span class="pl-v">body</span>) -&gt; <span class="pl-mm">Cohttp_lwt_body.</span>to_string body
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">s</span> -&gt; return (string_of_weather (weather_of_string s))
-</pre></div>
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">let</span> weather = Openweathermap_j.weather_of_string response <span class="hljs-keyword">in</span> ...</code></pre>
+
+<p>Now, in a new file <code>weather.ml</code>, letâ€™s write a function to query the API, and return a <code>weather</code> record:</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">let</span> query city = 
+  <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Openweathermap_j <span class="hljs-keyword">in</span>
+  Client.get (Uri.of_string 
+    (<span class="hljs-string">"http://api.openweathermap.org/data/2.5/weather?q="</span> ^ city))
+  &gt;&gt;= <span class="hljs-keyword">fun</span> (_, body) -&gt; Cohttp_lwt_body.to_string body
+  &gt;&gt;= <span class="hljs-keyword">fun</span> s -&gt; return (string_of_weather (weather_of_string s))
+</code></pre>
 
 <p>Writing asynchronous code with LWT is done by combining operations with the <code>&gt;&gt;=</code> operator. </p>
 
-<p>In <code>f &gt;&gt;= fun x -&gt; g x</code>, <code>g</code> is a "callback" which runs after <code>f</code> has completed, with the result of <code>f</code> (here bound to <code>x</code>) as input". </p>
+<p>In <code>f &gt;&gt;= fun x -&gt; g x</code>, <code>g</code> is a â€œcallbackâ€ which runs after <code>f</code> has completed, with the result of <code>f</code> (here bound to <code>x</code>) as inputâ€. </p>
 
 <p>For example, when in OCaml we write:</p>
 
-<pre><code>(Client.get uri) &gt;&gt;= fun (_, body) -&gt; to_string body
-</code></pre>
+
+
+<pre class="prettyprint"><code class=" hljs coffeescript"><span class="hljs-function"><span class="hljs-params">(Client.get uri)</span> &gt;&gt;= <span class="hljs-title">fun</span> <span class="hljs-params">(_, body)</span> -&gt;</span> to_string body</code></pre>
 
 <p>in Javascript, we would write:</p>
 
-<pre><code>Client.get(uri, function(_, body){ return to_string(body); })
-</code></pre>
+
+
+<pre class="prettyprint"><code class=" hljs actionscript">Client.<span class="hljs-keyword">get</span>(uri, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(_, body)</span>{</span> <span class="hljs-keyword">return</span> to_string(body); })</code></pre>
 
 <p>See this <a href="http://openmirage.org/wiki/tutorial-lwt">LWT tutorial</a> for more. </p>
 
-<p>Here's the complete program:</p>
-
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">open</span> <span class="pl-s3">Lwt</span>
-<span class="pl-k">open</span> <span class="pl-s3">Cohttp</span>
-<span class="pl-k">open</span> <span class="pl-s3">Cohttp_lwt_unix</span>
+<p>Hereâ€™s the complete program:</p>
 
 
-<span class="pl-k">let</span> <span class="pl-en">query</span> <span class="pl-v">city</span> <span class="pl-k">=</span> 
-  <span class="pl-k">let</span> <span class="pl-k">open</span> <span class="pl-s3">Openweathermap_j</span> <span class="pl-k">in</span>
-  <span class="pl-mm">Client.</span>get (<span class="pl-mm">Uri.</span>of_string 
-    (<span class="pl-s1"><span class="pl-pds">"</span>http://api.openweathermap.org/data/2.5/weather?q=<span class="pl-pds">"</span></span> <span class="pl-k">^</span> city))
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> (<span class="pl-v">_</span>, <span class="pl-v">body</span>) -&gt; <span class="pl-mm">Cohttp_lwt_body.</span>to_string body
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">s</span> -&gt; return (string_of_weather (weather_of_string s))
 
-<span class="pl-k">let</span> <span class="pl-en">make_server</span> <span class="pl-v">()</span> <span class="pl-k">=</span>
- <span class="pl-k">let</span> <span class="pl-en">callback</span> <span class="pl-v">conn_id</span> <span class="pl-v">req</span> <span class="pl-v">body</span> <span class="pl-k">=</span>
-  <span class="pl-k">let</span> uri <span class="pl-k">=</span> <span class="pl-mm">Request.</span>uri req <span class="pl-k">in</span>
-  <span class="pl-k">match</span> <span class="pl-mm">Re_str.</span>(split_delim (regexp_string <span class="pl-s1"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>) (<span class="pl-mm">Uri.</span>path uri)) <span class="pl-k">with</span><span class="pl-k"></span>
-  <span class="pl-k">|</span> <span class="pl-c">""</span>::<span class="pl-c">"weather"</span>::<span class="pl-v">city</span>::<span class="pl-c1">_</span> -&gt; query city <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">json</span> -&gt;
-     <span class="pl-k">let</span> headers <span class="pl-k">=</span> 
-       <span class="pl-mm">Header.</span>init_with <span class="pl-s1"><span class="pl-pds">"</span>content-type<span class="pl-pds">"</span></span> <span class="pl-s1"><span class="pl-pds">"</span>application/json; charset=utf-8<span class="pl-pds">"</span></span> <span class="pl-k">in</span>
-     <span class="pl-mm">Server.</span>respond_string <span class="pl-ent">~headers</span> <span class="pl-ent">~status:</span><span class="pl-en">`OK</span> <span class="pl-ent">~body:</span>json <span class="pl-c1">()</span>
-  <span class="pl-k">|</span> <span class="pl-c1">_</span> -&gt;
-    <span class="pl-mm">Server.</span>respond_string <span class="pl-ent">~status:</span><span class="pl-en">`Not_found</span> <span class="pl-ent">~body:</span><span class="pl-s1"><span class="pl-pds">"</span>Route not found<span class="pl-pds">"</span></span> <span class="pl-c1">()</span>
- <span class="pl-k">in</span>
- <span class="pl-k">let</span> <span class="pl-en">conn_closed</span> <span class="pl-v">conn_id</span> <span class="pl-v">()</span> <span class="pl-k">=</span> <span class="pl-c1">()</span> <span class="pl-k">in</span>
- <span class="pl-mm">Server.</span>create { <span class="pl-mm">Server.</span>callback; <span class="pl-mm">Server.</span>conn_closed }
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">open</span> Lwt
+<span class="hljs-keyword">open</span> Cohttp
+<span class="hljs-keyword">open</span> Cohttp_lwt_unix
 
 
-<span class="pl-k">let</span> _ <span class="pl-k">=</span> 
-  <span class="pl-mm">Lwt_unix.</span>run (make_server <span class="pl-c1">()</span>)</pre></div>
+<span class="hljs-keyword">let</span> query city = 
+  <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Openweathermap_j <span class="hljs-keyword">in</span>
+  Client.get (Uri.of_string 
+    (<span class="hljs-string">"http://api.openweathermap.org/data/2.5/weather?q="</span> ^ city))
+  &gt;&gt;= <span class="hljs-keyword">fun</span> (_, body) -&gt; Cohttp_lwt_body.to_string body
+  &gt;&gt;= <span class="hljs-keyword">fun</span> s -&gt; return (string_of_weather (weather_of_string s))
 
-<p>In our server handler, we match uri of the form "/weather/city" to an API call, and returns the temperature as JSON.</p>
-
-<p>Now we'll update the <code>_tags</code> file with our new dependencies:</p>
-
-<pre><code>true: package(lwt), package(cohttp), package(cohttp.lwt), package(atdgen), package(yojson), package(re.str)
-</code></pre>
-
-<p>Build and run, as before.</p>
-
-<pre><code>$ ocamlbuild -use-ocamlfind weather.native
-$ ./weather.native
-</code></pre>
-
-<pre><code>curl http://localhost:8080/weather/tokyo
-{"main":{"temp":285.92},"name":"Tokyo"}
-</code></pre>
-
-<h2>
-<a id="querying-multiple-apis" class="anchor" href="#querying-multiple-apis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Querying multiple APIs</h2>
-
-<p>Maybe we can build a more accurate temperature for a city, by querying and averaging multiple weather APIs.
-Unfortunately for us, most weather APIs require authentication.
-So, get yourself an API key for <a href="http://www.wunderground.com/weather/api">Weather Underground</a>.</p>
-
-<p>Since we want the same behavior from all of our weather providers, we're going to encode this in a module signature:</p>
-
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">module type </span><span class="pl-en">Weather</span> <span class="pl-k">=</span> <span class="pl-k">sig</span>
-    <span class="pl-c">(** get city's temperature in kelvin *)</span>
-    <span class="pl-k">val</span> <span class="pl-en">get_temp</span> : <span class="pl-v"><span class="pl-ent">city</span>:<span class="pl-st">string</span> </span>-&gt; <span class="pl-st">float</span> <span class="pl-s3">Lwt</span><span class="pl-st">.t</span>
-<span class="pl-k">end</span></pre></div>
-
-<p>Now, we can provide our old OpenWeatherMap query function in a module that satisfies this signature.</p>
-
-<p>And we'll add a simple line of logging, so we can see what's happening.</p>
-
-<div class="highlight highlight-ocaml"><pre><span class="pl-c">(** OpenWeatherMap Provider *)</span>
-<span class="pl-k">module</span> <span class="pl-en">OpenWeatherMap</span> : <span class="pl-en">Weather</span> <span class="pl-k">=</span> <span class="pl-k">struct</span>
-  <span class="pl-k">open</span> <span class="pl-s3">Openweathermap_j</span>
-
-  <span class="pl-k">let</span> <span class="pl-en">get_temp</span> <span class="pl-v">~<span class="pl-ent">city</span></span> <span class="pl-k">=</span> 
-  <span class="pl-mm">Client.</span>get (<span class="pl-mm">Uri.</span>of_string 
-    (<span class="pl-s1"><span class="pl-pds">"</span>http://api.openweathermap.org/data/2.5/weather?q=<span class="pl-pds">"</span></span> <span class="pl-k">^</span> city))
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> (<span class="pl-v">_</span>, <span class="pl-v">body</span>) -&gt; <span class="pl-mm">Cohttp_lwt_body.</span>to_string body
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">s</span> -&gt; 
-    <span class="pl-k">let</span> w <span class="pl-k">=</span> weather_of_string s <span class="pl-k">in</span> 
-    <span class="pl-k">let</span> temp <span class="pl-k">=</span> w.main.temp <span class="pl-k">in</span>
-    <span class="pl-mm">Lwt_io.</span>printf <span class="pl-s1"><span class="pl-pds">"</span>openWeatherMap: %s: %.2f<span class="pl-c1">\n</span><span class="pl-pds">"</span></span> city temp 
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">_</span> -&gt; return temp
-
-end
-</pre></div>
-
-<p>Let's do the same for the Weather Underground.</p>
-
-<p>Here's how the response looks (partially redacted):</p>
-
-<pre><code>{
-  "response": {
-    "version": "0.1",
-    "termsofService": "http://www.wunderground.com/weather/api/d/terms.html",
-    "features": {
-    "conditions": 1
-    }
-  },
-  "current_observation": {
-  ...
-  "estimated": {},
-  "station_id": "KCASANFR58",
-  "observation_time": "Last Updated on June 27, 5:27 PM PDT",
-  "observation_time_rfc822": "Wed, 27 Jun 2012 17:27:13 -0700",
-  "observation_epoch": "1340843233",
-  "local_time_rfc822": "Wed, 27 Jun 2012 17:27:14 -0700",
-  "local_epoch": "1340843234",
-  "local_tz_short": "PDT",
-  "local_tz_long": "America/Los_Angeles",
-  "local_tz_offset": "-0700",
-  "weather": "Partly Cloudy",
-  "temperature_string": "66.3 F (19.1 C)",
-  "temp_f": 66.3,
-  "temp_c": 19.1,
-  ...
-  }
-}
-</code></pre>
-
-<p>First let's define a new atdgen specification in <code>weatherunderground.atd</code>, just to get at <code>temp_c</code>:</p>
-
-<pre><code>type current_observation = { temp_c: float }
-type conditions = { current_observation: current_observation }
-</code></pre>
-
-<p>and like before, we generate the OCaml code:</p>
-
-<pre><code>atdgen -t weatherunderground.atd
-atdgen -j weatherunderground.atd
-</code></pre>
-
-<p>We also need to provide an API key.
-We'll define the key in the module, and use it in the <code>get_temp</code> function.</p>
-
-<p>(Note that the Weather Underground doesn't disambiguate cities quite as nicely as OpenWeatherMap.
-We're skipping some important logic to handle ambiguous city names for the purposes of the example.)</p>
-
-<div class="highlight highlight-ocaml"><pre><span class="pl-c">(** WeatherUnderground Provider *)</span>
-<span class="pl-k">module</span> <span class="pl-en">WeatherUnderground</span> : <span class="pl-en">Weather</span> <span class="pl-k">=</span> <span class="pl-k">struct</span>
-  <span class="pl-k">open</span> <span class="pl-s3">Weatherunderground_j</span>
-
-  <span class="pl-k">let</span> key <span class="pl-k">=</span> <span class="pl-s1"><span class="pl-pds">"</span>...<span class="pl-pds">"</span></span> <span class="pl-c">(* your WU API key *)</span>
-
-  <span class="pl-k">let</span> <span class="pl-en">kelvin_of_celsius</span> <span class="pl-v">t</span> <span class="pl-k">=</span> t <span class="pl-k">+.</span> <span class="pl-c1">273.15</span>
-
-  <span class="pl-k">let</span> <span class="pl-en">get_temp</span> <span class="pl-v">~<span class="pl-ent">city</span></span> <span class="pl-k">=</span> 
-  <span class="pl-mm">Client.</span>get (<span class="pl-mm">Uri.</span>of_string (<span class="pl-s1"><span class="pl-pds">"</span>http://api.wunderground.com/api/<span class="pl-pds">"</span></span> <span class="pl-k">^</span> 
-    key <span class="pl-k">^</span> <span class="pl-s1"><span class="pl-pds">"</span>/conditions/q/<span class="pl-pds">"</span></span> <span class="pl-k">^</span> city <span class="pl-k">^</span> <span class="pl-s1"><span class="pl-pds">"</span>.json<span class="pl-pds">"</span></span>))
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> (<span class="pl-v">_</span>, <span class="pl-v">body</span>) -&gt; <span class="pl-mm">Cohttp_lwt_body.</span>to_string body
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">s</span> -&gt; 
-    <span class="pl-k">let</span> c <span class="pl-k">=</span> conditions_of_string s <span class="pl-k">in</span> 
-    <span class="pl-k">let</span> temp <span class="pl-k">=</span> kelvin_of_celsius c.current_observation.temp_c <span class="pl-k">in</span>
-    <span class="pl-mm">Lwt_io.</span>printf <span class="pl-s1"><span class="pl-pds">"</span>WeatherUnderground: %s: %.2f<span class="pl-c1">\n</span><span class="pl-pds">"</span></span> city temp 
-  <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> <span class="pl-k">fun</span> <span class="pl-v">_</span> -&gt; return temp
-
-end
-</pre></div>
-
-<p>Now that we have a couple of weather providers, let's write a function to query them all, and return the average temperature.</p>
-
-<p>For simplicity, if we encounter any errors, we'll just give up. IS IT TRUE ?</p>
-
-<p>First we'll install <code>core</code>, to use its <code>Time</code> module (Core is a modernized OCaml standard library from Jane Street). Be aware that installing it can take a few minutes...</p>
-
-<pre><code>$ opam install core
-</code></pre>
-
-<p>Next, in <code>response.atd</code>, we'll define a type to describe the JSON response.</p>
-
-<pre><code>type response = { city: string; temp: float; took: string; }
-</code></pre>
-
-<p>Again, we generate the boilerplate OCaml code:</p>
-
-<pre><code>$ atdgen -t response.atd
-$ atdgen -j response.atd
-</code></pre>
-
-<p>Now let's write the function <code>temperature</code>. 
-It takes a city name and a list of provider functions
-looking at their type, val get_temp : city:string -&gt; float Lwt.t</p>
-
-<div class="highlight highlight-ocaml"><pre><span class="pl-k">let</span> <span class="pl-en">average</span> <span class="pl-v">xs</span> <span class="pl-k">=</span>
-  <span class="pl-k">let</span> sum <span class="pl-k">=</span> <span class="pl-mm">List.</span>fold_left (<span class="pl-k">+.</span>) <span class="pl-c1">0.</span> xs <span class="pl-k">in</span>
-  (sum <span class="pl-k">/.</span> float_of_int (<span class="pl-mm">List.</span>length xs))
-
-
-<span class="pl-k">let</span> <span class="pl-en">temperature</span> <span class="pl-v">~<span class="pl-ent">city</span></span> <span class="pl-v">~<span class="pl-ent">providers</span></span> <span class="pl-k">=</span>
-  <span class="pl-k">let</span> <span class="pl-k">open</span> <span class="pl-s3">Response_j</span> <span class="pl-k">in</span> 
-  <span class="pl-k">let</span> <span class="pl-k">open</span> <span class="pl-s3">Core.Std</span> <span class="pl-k">in</span>
-    <span class="pl-k">let</span> t0 <span class="pl-k">=</span> <span class="pl-mm">Time.</span>now <span class="pl-c1">()</span> <span class="pl-k">in</span>
-    <span class="pl-mm">Lwt_list.</span>map_p (<span class="pl-k">fun</span> <span class="pl-v">get_temp</span> -&gt; get_temp <span class="pl-ent">~city</span>) providers <span class="pl-k">&gt;&gt;</span><span class="pl-k">=</span> 
-      <span class="pl-k">fun</span> <span class="pl-v">temps</span> -&gt; 
-        <span class="pl-k">let</span> t1 <span class="pl-k">=</span> <span class="pl-mm">Time.</span>now <span class="pl-c1">()</span> <span class="pl-k">in</span>
-        <span class="pl-k">let</span> response <span class="pl-k">=</span> { city <span class="pl-k">=</span> city; temp <span class="pl-k">=</span> average temps; 
-                         took <span class="pl-k">=</span> <span class="pl-mm">Core.Span.</span>to_string (<span class="pl-mm">Time.</span>diff t1 t0); }
-        <span class="pl-k">in</span> return (string_of_response response)</pre></div>
-
-<p>We use <code>Lwt_list.map_p</code> to fire off queries in parallel.
-Once the longest queries is finished, we return the average temperature
-and the time it took. </p>
-
-<p>Notice that the function definition is very close to the weatherProvider temperature method.
-If we collect the individual weatherProviders into a type, and define the temperature method on that type,
-we can implement a meta-weatherProvider, comprised of other weatherProviders.</p>
-
-<p>Now, we can wire that up to our HTTP server.</p>
-
-<pre><code>let make_server temp =
- let callback conn_id req body =
-  let uri = Request.uri req in
-  match Re_str.(split_delim (regexp_string "/") (Uri.path uri)) with
-  | ""::"weather"::city::_ -&gt; temp ~city &gt;&gt;= fun json -&gt;
-     let headers = 
-       Header.init_with "content-type" "application/json; charset=utf-8" in
+<span class="hljs-keyword">let</span> make_server () =
+ <span class="hljs-keyword">let</span> callback conn_id req body =
+  <span class="hljs-keyword">let</span> uri = Request.uri req <span class="hljs-keyword">in</span>
+  <span class="hljs-keyword">match</span> Re_str.(split_delim (regexp_string <span class="hljs-string">"/"</span>) (Uri.path uri)) <span class="hljs-keyword">with</span>
+  | <span class="hljs-string">""</span>::<span class="hljs-string">"weather"</span>::city::_ -&gt; query city &gt;&gt;= <span class="hljs-keyword">fun</span> json -&gt;
+     <span class="hljs-keyword">let</span> headers = 
+       Header.init_with <span class="hljs-string">"content-type"</span> <span class="hljs-string">"application/json; charset=utf-8"</span> <span class="hljs-keyword">in</span>
      Server.respond_string ~headers ~status:`OK ~body:json ()
   | _ -&gt;
-    Server.respond_string ~status:`Not_found ~body:"Route not found" ()
- in
- let conn_closed conn_id () = () in
+    Server.respond_string ~status:`Not_found ~body:<span class="hljs-string">"Route not found"</span> ()
+ <span class="hljs-keyword">in</span>
+ <span class="hljs-keyword">let</span> conn_closed conn_id () = () <span class="hljs-keyword">in</span>
  Server.create { Server.callback; Server.conn_closed }
 
 
-let _ = 
-  let providers = [OpenWeatherMap.get_temp; WeatherUnderground.get_temp;] 
-  in Lwt_unix.run (make_server (temperature ~providers))
-</code></pre>
+<span class="hljs-keyword">let</span> _ = 
+  Lwt_unix.run (make_server ())</code></pre>
 
-<p>Note that we pass a partially applied <code>temperature</code> function to <code>make_server</code>.</p>
+<p>In our server handler, we match uri of the form â€œ/weather/cityâ€ to an API call, and returns the temperature as JSON (Note that we specify a JSON specific Content-Type header).</p>
 
-<p>Now we'll update our <code>_tags</code> file:</p>
+<p>Now weâ€™ll update the <code>_tags</code> file with our new dependencies:</p>
 
-<pre><code>true: package(core), package(lwt), package(cohttp), package(cohttp.lwt), package(atdgen), package(yojson), package(re.str), thread
-</code></pre>
+<pre class="prettyprint"><code class=" hljs lua"><span class="hljs-keyword">true</span>: <span class="hljs-built_in">package</span>(lwt), <span class="hljs-built_in">package</span>(cohttp), <span class="hljs-built_in">package</span>(cohttp.lwt), <span class="hljs-built_in">package</span>(atdgen), <span class="hljs-built_in">package</span>(yojson), <span class="hljs-built_in">package</span>(re.str)</code></pre>
 
-<p>Finally we compile, run, and GET, just as before.
-In addition to the JSON response, you'll see the following output.</p>
+<p>Build and run, as before.</p>
 
-<pre><code>$ ./weather.native
-openWeatherMap: tokyo: 287.11
-WeatherUnderground: tokyo: 288.15
-</code></pre>
 
-<pre><code>$ curl http://localhost/weather/tokyo
-{"city":"tokyo","temp":287.63,"took":"611.787ms"}
-</code></pre>
 
-<h2>
-<a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conclusion</h2>
+<pre class="prettyprint"><code class=" hljs actionscript">$ ocamlbuild -<span class="hljs-keyword">use</span>-ocamlfind weather.<span class="hljs-keyword">native</span>
+$ ./weather.<span class="hljs-keyword">native</span></code></pre>
 
-<p>So in the end, was it as easy and fun as Go ?</p>
 
-<p>Well... I have to admit that OCaml is much less "batteries included" than Go: we had to install libraries for the http server, JSON serialization, and even time operations.</p>
 
-<p>Also building the program is more involved.</p>
+<pre class="prettyprint"><code class=" hljs cs">$ curl http:<span class="hljs-comment">//localhost:8080/weather/tokyo</span>
+{<span class="hljs-string">"main"</span>:{<span class="hljs-string">"temp"</span>:<span class="hljs-number">285.92</span>},<span class="hljs-string">"name"</span>:<span class="hljs-string">"Tokyo"</span>}</code></pre>
 
-<p>The concurrent code with LWT takes some time to get used to, but I am not familiar enough with Go's concurrency to judge which one is easier.</p>
+<h2 id="querying-multiple-apis">Querying multiple APIs</h2>
 
-<p>So probably not as easy overall... </p>
+<p>Maybe we can build a more accurate temperature for a city, by querying and averaging multiple weather APIs. <br>
+Unfortunately for us, most weather APIs require authentication. <br>
+So, get yourself an API key for <a href="http://www.wunderground.com/weather/api">Weather Underground</a>.</p>
+
+<p>All of our weather providers will expose a function to query an API and return a temperature. In OCaml, a weather provider could be a simple function, an object or a module.</p>
+
+<p>To follow to the Go code, weâ€™ll use objects first.  <br>
+In an new <code>weather.ml</code> file, we write the code for OpenWeatherMap:</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-comment">(** OpenWeatherMap Provider *)</span>
+
+<span class="hljs-keyword">let</span> open_weather_map = <span class="hljs-keyword">object</span>
+  <span class="hljs-keyword">method</span> temperature city =
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Openweathermap_j <span class="hljs-keyword">in</span>
+    Client.get (Uri.of_string 
+    (<span class="hljs-string">"http://api.openweathermap.org/data/2.5/weather?q="</span> ^ city))
+    &gt;&gt;= <span class="hljs-keyword">fun</span> (_, body) -&gt; Cohttp_lwt_body.to_string body
+    &gt;&gt;= <span class="hljs-keyword">fun</span> s -&gt; return (string_of_weather (weather_of_string s))
+<span class="hljs-keyword">end</span></code></pre>
+
+<p>This defines an object that queries the OpenWeatherMap API (weâ€™ve renamed our <code>query</code> function, <code>temperature</code>). </p>
+
+<p>OCaml automatically infers the type of this object as :</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">val</span> open_weather_map : &lt; temperature : <span class="hljs-built_in">string</span> -&gt; <span class="hljs-built_in">float</span> Lwt.t &gt; = obj</code></pre>
+
+<p>Which in English, reads: â€œan object with a <code>temperature</code> method, which takes a string and returns a float asynchronouslyâ€ (<code>Lwt.t</code> is the type of an LWT thread). </p>
+
+<p>Similarly to Go, OCamlâ€™s objects are typed by the names and types of their methods.</p>
+
+<p>Now, letâ€™s turn to the Weather Underground API.</p>
+
+<p>Hereâ€™s how the response looks (partially redacted):</p>
+
+<pre class="prettyprint"><code class="language-json hljs ">{
+  "<span class="hljs-attribute">response</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">version</span>": <span class="hljs-value"><span class="hljs-string">"0.1"</span></span>,
+    "<span class="hljs-attribute">termsofService</span>": <span class="hljs-value"><span class="hljs-string">"http://www.wunderground.com/weather/api/d/terms.html"</span></span>,
+    "<span class="hljs-attribute">features</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">conditions</span>": <span class="hljs-value"><span class="hljs-number">1</span>
+    </span>}
+  </span>}</span>,
+  "<span class="hljs-attribute">current_observation</span>": <span class="hljs-value">{
+  ...
+  "<span class="hljs-attribute">estimated</span>": <span class="hljs-value">{}</span>,
+  "<span class="hljs-attribute">station_id</span>": <span class="hljs-value"><span class="hljs-string">"KCASANFR58"</span></span>,
+  "<span class="hljs-attribute">observation_time</span>": <span class="hljs-value"><span class="hljs-string">"Last Updated on June 27, 5:27 PM PDT"</span></span>,
+  "<span class="hljs-attribute">observation_time_rfc822</span>": <span class="hljs-value"><span class="hljs-string">"Wed, 27 Jun 2012 17:27:13 -0700"</span></span>,
+  "<span class="hljs-attribute">observation_epoch</span>": <span class="hljs-value"><span class="hljs-string">"1340843233"</span></span>,
+  "<span class="hljs-attribute">local_time_rfc822</span>": <span class="hljs-value"><span class="hljs-string">"Wed, 27 Jun 2012 17:27:14 -0700"</span></span>,
+  "<span class="hljs-attribute">local_epoch</span>": <span class="hljs-value"><span class="hljs-string">"1340843234"</span></span>,
+  "<span class="hljs-attribute">local_tz_short</span>": <span class="hljs-value"><span class="hljs-string">"PDT"</span></span>,
+  "<span class="hljs-attribute">local_tz_long</span>": <span class="hljs-value"><span class="hljs-string">"America/Los_Angeles"</span></span>,
+  "<span class="hljs-attribute">local_tz_offset</span>": <span class="hljs-value"><span class="hljs-string">"-0700"</span></span>,
+  "<span class="hljs-attribute">weather</span>": <span class="hljs-value"><span class="hljs-string">"Partly Cloudy"</span></span>,
+  "<span class="hljs-attribute">temperature_string</span>": <span class="hljs-value"><span class="hljs-string">"66.3 F (19.1 C)"</span></span>,
+  "<span class="hljs-attribute">temp_f</span>": <span class="hljs-value"><span class="hljs-number">66.3</span></span>,
+  "<span class="hljs-attribute">temp_c</span>": <span class="hljs-value"><span class="hljs-number">19.1</span></span>,
+  ...
+  }
+</span>}</code></pre>
+
+<p>First we define a new atdgen specification in <code>weatherunderground.atd</code>, just to get at <code>temp_c</code>:</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">current_observation</span> =</span> { temp_c: <span class="hljs-built_in">float</span> }
+<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">conditions</span> =</span> { current_observation: current_observation }</code></pre>
+
+<p>and like before, we generate the OCaml code:</p>
+
+<pre class="prettyprint"><code class=" hljs ruby"><span class="hljs-variable">$ </span>atdgen -t weatherunderground.atd
+<span class="hljs-variable">$ </span>atdgen -j weatherunderground.atd</code></pre>
+
+<p>We need to provide a key to use this API (the key is used in the URI) </p>
+
+<p>(Note that the Weather Underground doesnâ€™t disambiguate cities quite as nicely as OpenWeatherMap. Weâ€™re skipping some important logic to handle ambiguous city names for the purposes of the example.)</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-comment">(** WeatherUnderground Provider *)</span>
+
+<span class="hljs-keyword">let</span> weather_underground key = <span class="hljs-keyword">object</span>
+  <span class="hljs-keyword">method</span> temperature ~city =
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Weatherunderground_j <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> kelvin_of_celsius t = t +. <span class="hljs-number">273.15</span> <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> uri =  <span class="hljs-string">"http://api.wunderground.com/api/"</span> ^ key ^ 
+                 <span class="hljs-string">"/conditions/q/"</span> ^ city ^ <span class="hljs-string">".json"</span> <span class="hljs-keyword">in</span>
+    Client.get (Uri.of_string uri)
+    &gt;&gt;= <span class="hljs-keyword">fun</span> (_, body) -&gt; Cohttp_lwt_body.to_string body
+    &gt;&gt;= <span class="hljs-keyword">fun</span> s -&gt; <span class="hljs-keyword">let</span> c = conditions_of_string s <span class="hljs-keyword">in</span>
+                 <span class="hljs-keyword">let</span> temp = kelvin_of_celsius c.current_observation.temp_c <span class="hljs-keyword">in</span>
+                 Lwt_io.printf <span class="hljs-string">"%s: %s: %.2f\n"</span> <span class="hljs-string">"WeatherUnderground"</span> city temp &gt;&gt;=
+                 <span class="hljs-keyword">fun</span> _ -&gt; return temp 
+<span class="hljs-keyword">end</span></code></pre>
+
+<p>Now that we have a couple of weather providers, letâ€™s write a function to query them all, and return the average temperature.</p>
+
+<p>First weâ€™ll install <code>core</code>, to use its <code>Time</code> module (Core is a modernized OCaml standard library from <a href="https://www.janestreet.com/">Jane Street</a>). Be aware that installing it takes a few minutesâ€¦</p>
+
+<pre class="prettyprint"><code class=" hljs ruby"><span class="hljs-variable">$ </span>opam install core</code></pre>
+
+<p>Next, in <code>response.atd</code>, weâ€™ll define a type to describe the JSON response.</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs ocaml"><span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">response</span> =</span> { city: <span class="hljs-built_in">string</span>; temp: <span class="hljs-built_in">float</span>; took: <span class="hljs-built_in">string</span>; }</code></pre>
+
+<p>Again, we generate the boilerplate OCaml code:</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs ruby"><span class="hljs-variable">$ </span>atdgen -t response.atd
+<span class="hljs-variable">$ </span>atdgen -j response.atd</code></pre>
+
+<p>Now letâ€™s write a function multi_providers which create an object from a list of providers.</p>
+
+
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">let</span> multi_providers ps = <span class="hljs-keyword">object</span>
+    <span class="hljs-keyword">method</span> temperature ~city =
+      <span class="hljs-keyword">let</span> average xs =
+        <span class="hljs-keyword">let</span> sum = List.fold_left (+.) <span class="hljs-number">0.</span> xs <span class="hljs-keyword">in</span>
+        (sum /. float_of_int (List.length xs))
+      <span class="hljs-keyword">in</span>
+      <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Response_j <span class="hljs-keyword">in</span> 
+      <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Core.Std <span class="hljs-keyword">in</span>
+      <span class="hljs-keyword">let</span> t0 = Time.now () <span class="hljs-keyword">in</span>
+      Lwt_list.map_p (<span class="hljs-keyword">fun</span> p -&gt; p#temperature ~city) ps &gt;&gt;= 
+        <span class="hljs-keyword">fun</span> temps -&gt; 
+        <span class="hljs-keyword">let</span> t1 = Time.now () <span class="hljs-keyword">in</span>
+        <span class="hljs-keyword">let</span> response = { city = city; temp = average temps; 
+                         took = Core.Span.to_string (Time.diff t1 t0); }
+        <span class="hljs-keyword">in</span> return (string_of_response response)
+
+  <span class="hljs-keyword">end</span></code></pre>
+
+<p>We use <code>Lwt_list.map_p</code> to fire off queries in parallel. Once the longest queriy is finished, we return the average temperature and the time it took. </p>
+
+<p>Now, we can wire that up to our HTTP server. Note that we pass our multi_providers <code>temperature</code> method to <code>make_server</code>, so we can use it to handle requests. </p>
+
+<pre class="prettyprint"><code class=" hljs vbscript">(** web  <span class="hljs-built_in">server</span> *)  
+<span class="hljs-keyword">let</span> make_server temperature =
+ <span class="hljs-keyword">let</span> callback conn_id req body =
+  <span class="hljs-keyword">let</span> uri = <span class="hljs-built_in">Request</span>.uri req <span class="hljs-keyword">in</span>
+  match Re_str.(split_delim (regexp_string <span class="hljs-string">"/"</span>) (Uri.path uri)) <span class="hljs-keyword">with</span>
+  | <span class="hljs-string">""</span>::<span class="hljs-string">"weather"</span>::city::_ -&gt; temperature ~city &gt;&gt;= fun json -&gt;
+     <span class="hljs-keyword">let</span> headers = 
+       Header.init_with <span class="hljs-string">"content-type"</span> <span class="hljs-string">"application/json; charset=utf-8"</span> <span class="hljs-keyword">in</span>
+     <span class="hljs-built_in">Server</span>.respond_string ~headers ~status:`OK ~body:json ()
+  | _ -&gt;
+    <span class="hljs-built_in">Server</span>.respond_string ~status:`Not_found ~body:<span class="hljs-string">"Route not found"</span> ()
+ <span class="hljs-keyword">in</span>
+ <span class="hljs-keyword">let</span> conn_closed conn_id () = () <span class="hljs-keyword">in</span>
+ <span class="hljs-built_in">Server</span>.create { <span class="hljs-built_in">Server</span>.callback; <span class="hljs-built_in">Server</span>.conn_closed }
+
+ <span class="hljs-keyword">let</span> _ = 
+  <span class="hljs-keyword">let</span> ps = multi_providers [
+               open_weather_map; 
+               weather_underground <span class="hljs-string">"..."</span> (* your API key*) ] <span class="hljs-keyword">in</span>
+  Lwt_unix.run (make_server ps#temperature)</code></pre>
+
+<p>Now weâ€™ll update our <code>_tags</code> file:</p>
+
+<pre class="prettyprint"><code class=" hljs lua"><span class="hljs-keyword">true</span>: <span class="hljs-built_in">package</span>(core), <span class="hljs-built_in">package</span>(lwt), <span class="hljs-built_in">package</span>(cohttp), <span class="hljs-built_in">package</span>(cohttp.lwt), <span class="hljs-built_in">package</span>(atdgen), <span class="hljs-built_in">package</span>(yojson), <span class="hljs-built_in">package</span>(re.str), thread</code></pre>
+
+<p>Finally we compile, run, and GET, just as before.</p>
+
+<pre class="prettyprint"><code class=" hljs avrasm">$ ocamlbuild -use-ocamlfind weather<span class="hljs-preprocessor">.native</span>
+$ ./weather<span class="hljs-preprocessor">.native</span>
+<span class="hljs-label">openWeatherMap:</span> tokyo: <span class="hljs-number">287.11</span>
+<span class="hljs-label">WeatherUnderground:</span> tokyo: <span class="hljs-number">288.15</span></code></pre>
+
+<p>In addition to the JSON response, youâ€™ll see the following output.</p>
+
+<pre class="prettyprint"><code class=" hljs cs">$ curl http:<span class="hljs-comment">//localhost/weather/tokyo</span>
+{<span class="hljs-string">"city"</span>:<span class="hljs-string">"tokyo"</span>,<span class="hljs-string">"temp"</span>:<span class="hljs-number">287.63</span>,<span class="hljs-string">"took"</span>:<span class="hljs-string">"611.787ms"</span>}</code></pre>
+
+<p><a href="https://github.com/voila/weather_api_ocaml/tree/master/weather_obj_multiple">All code</a></p>
+
+<h2 id="using-modules">Using Modules</h2>
+
+<p>Another way to implement our weather providers is via OCamlâ€™s modules.</p>
+
+<p>Letâ€™s create a new file <code>api.ml</code> to write our API code.</p>
+
+<p>Each provider module will need to implement the following signature (module interface): </p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">module</span> <span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">WeatherProvider</span> =</span>
+<span class="hljs-keyword">sig</span> 
+  <span class="hljs-keyword">val</span> temperature: <span class="hljs-built_in">string</span> -&gt; <span class="hljs-built_in">float</span> Lwt.t 
+<span class="hljs-keyword">end</span> </code></pre>
+
+<p>Letâ€™s write the <code>OpenWeatherMap</code> module:</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">module</span> OpenWeatherMap : WeatherProvider =
+<span class="hljs-keyword">struct</span>
+  <span class="hljs-keyword">let</span> name = <span class="hljs-string">"OpenWeatherMap"</span>
+
+  <span class="hljs-keyword">let</span> uri city =
+    <span class="hljs-string">"http://api.openweathermap.org/data/2.5/weather?q="</span> ^ city
+
+  <span class="hljs-keyword">let</span> temperature city = 
+  Client.get (Uri.of_string (uri city))
+  &gt;&gt;= <span class="hljs-keyword">fun</span> (_, body) -&gt; Cohttp_lwt_body.to_string body
+  &gt;&gt;= <span class="hljs-keyword">fun</span> s -&gt; 
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Openweathermap_j <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> w = weather_of_string s <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> temp = w.main.temp <span class="hljs-keyword">in</span>
+    Lwt_io.printf <span class="hljs-string">"%s: %.2f\n"</span> w.name temp 
+  &gt;&gt;= <span class="hljs-keyword">fun</span> _ -&gt; return temp
+  <span class="hljs-keyword">end</span></code></pre>
+
+<p>and the <code>WeatherUnderground</code> module:</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">module</span> WeatherUnderground : WeatherProvider =
+<span class="hljs-keyword">struct</span>
+  <span class="hljs-keyword">let</span> kelvin_of_celsius t = t +. <span class="hljs-number">273.15</span>
+
+  <span class="hljs-keyword">let</span> key = <span class="hljs-string">"..."</span> <span class="hljs-comment">(* your API key *)</span>
+
+  <span class="hljs-keyword">let</span> name = <span class="hljs-string">"WeatherUnderground"</span>
+
+  <span class="hljs-keyword">let</span> uri city = <span class="hljs-string">"http://api.wunderground.com/api/"</span> ^ 
+    key ^ <span class="hljs-string">"/conditions/q/"</span> ^ city ^ <span class="hljs-string">".json"</span>
+
+  <span class="hljs-keyword">let</span> temperature city = 
+  Client.get (Uri.of_string (uri city))
+  &gt;&gt;= <span class="hljs-keyword">fun</span> (_, body) -&gt; Cohttp_lwt_body.to_string body
+  &gt;&gt;= <span class="hljs-keyword">fun</span> s -&gt; 
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Weatherunderground_j <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> c = conditions_of_string s <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> temp = kelvin_of_celsius c.current_observation.temp_c <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> name = c.current_observation.display_location.full <span class="hljs-keyword">in</span>
+    Lwt_io.printf <span class="hljs-string">"%s: %.2f\n"</span> name temp 
+  &gt;&gt;= <span class="hljs-keyword">fun</span> _ -&gt; return temp  
+<span class="hljs-keyword">end</span></code></pre>
+
+<p>To implement multiple providers, weâ€™ll use OCamlâ€™s <a href="https://realworldocaml.org/v1/en/html/functors.html">functors</a>. <br>
+<code>MultipleWeather</code> is a functor parameterized by 2 providers M1 and M2. <br>
+Like before, our temperature function averages the temperatures returned by the other providers:</p>
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">module</span> MultipleWeather (M1 : WeatherProvider) 
+                       (M2 : WeatherProvider) : WeatherProvider = 
+<span class="hljs-keyword">struct</span>
+  <span class="hljs-keyword">let</span> average xs =
+    <span class="hljs-keyword">let</span> sum = List.fold_left (+.) <span class="hljs-number">0.</span> xs <span class="hljs-keyword">in</span>
+    (sum /. float_of_int (List.length xs))
+
+  <span class="hljs-keyword">let</span> temperature city =
+    Lwt_list.map_p (<span class="hljs-keyword">fun</span> gt -&gt; gt city) [M1.temperature; M2.temperature] &gt;&gt;= 
+      <span class="hljs-keyword">fun</span> temps -&gt; return (average temps)
+
+<span class="hljs-keyword">end</span></code></pre>
+
+<p>Finally, we apply our <code>MultipleWeather</code> functor to <code>OpenWeatherMap</code> and <code>WeatherUnderground</code>, to create <code>MW</code>:</p>
+
+<pre class="prettyprint"><code class=" hljs haskell"><span class="hljs-module"><span class="hljs-keyword">module</span> MW = MultipleWeather <span class="hljs-container">(<span class="hljs-type">OpenWeatherMap</span>)</span> <span class="hljs-container">(<span class="hljs-type">WeatherUnderground</span>)</span> </span></code></pre>
+
+<p>In <code>weather.ml</code>, weâ€™ll write our web server: </p>
+
+
+
+<pre class="prettyprint"><code class="language-ocaml hljs "><span class="hljs-keyword">open</span> Lwt
+<span class="hljs-keyword">open</span> Cohttp
+<span class="hljs-keyword">open</span> Cohttp_lwt_unix
+<span class="hljs-keyword">open</span> Api
+
+
+
+<span class="hljs-keyword">let</span> make_server temperature =
+ <span class="hljs-keyword">let</span> callback conn_id req body =
+  <span class="hljs-keyword">let</span> uri = Request.uri req <span class="hljs-keyword">in</span>
+  <span class="hljs-keyword">match</span> Re_str.(split_delim (regexp_string <span class="hljs-string">"/"</span>) (Uri.path uri)) <span class="hljs-keyword">with</span>
+  | <span class="hljs-string">""</span>::<span class="hljs-string">"weather"</span>::city::_ -&gt; 
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Response_j <span class="hljs-keyword">in</span> 
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">open</span> Core.Std <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> t0 = Time.now () <span class="hljs-keyword">in</span>
+    temperature city &gt;&gt;= <span class="hljs-keyword">fun</span> temp -&gt;
+    <span class="hljs-keyword">let</span> t1 = Time.now () <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> response = { city = city; temp = temp; 
+                     took = Core.Span.to_string (Time.diff t1 t0); } <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> json = string_of_response response <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> headers = 
+       Header.init_with <span class="hljs-string">"content-type"</span> <span class="hljs-string">"application/json; charset=utf-8"</span> <span class="hljs-keyword">in</span>
+     Server.respond_string ~headers ~status:`OK ~body:json ()
+  | _ -&gt;
+    Server.respond_string ~status:`Not_found ~body:<span class="hljs-string">"Route not found"</span> ()
+ <span class="hljs-keyword">in</span>
+ <span class="hljs-keyword">let</span> conn_closed conn_id () = () <span class="hljs-keyword">in</span>
+ Server.create { Server.callback; Server.conn_closed }
+
+
+<span class="hljs-keyword">let</span> _ = 
+  Lwt_unix.run (make_server MW.temperature)</code></pre>
+
+<p>Here we pass our averaging temperature function, <code>MW.temperature</code>, to <code>make_server</code> </p>
+
+<p><a href="https://github.com/voila/weather_api_ocaml/tree/master/weather_multiple_functors">All code</a></p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>So in the end, was it as easy as Go ?</p>
+
+<p>Well, I have to admit that OCaml is much less â€œbatteries includedâ€ than Go: we had to install libraries for the http server,  the asynchronous library, JSON serialization, and even time operations.</p>
+
+<p>Also building the program is more involved (atdgen, the _tags file).</p>
+
+<p>Writing concurrent code with LWT takes some time to get used to, but I am not familiar enough with Goâ€™s concurrency to judge which one is easier.</p>
+
+<p>So probably not as easy overallâ€¦ </p>
 
 <p>I did have fun though :)</p>
 
-<h2>
-<a id="further-exercises" class="anchor" href="#further-exercises" aria-hidden="true"><span class="octicon octicon-link"></span></a>Further exercises</h2>
+<h2 id="further-exercises">Further exercises</h2>
 
-<p><a href="https://github.com/voila/weather_api_ocaml">Fork</a> the final code on github.</p>
+<p><a href="https://github.com/voila/weather-api-ocaml">Fork</a> the final code on github.</p>
 
-<p>Can you add some error handling (for instance, can you prevent the failure of one weather provider from aborting the whole computation) ?</p>
+<p>Can you add some error handling?  For instance, can you prevent the failure of one weather provider from aborting the whole computation ? (Hint: use Lwt.catch and change the type of temperature to : string -&gt; float option Lwt.t) .</p>
 
-<p>Can you add another weather provider? (Hint: <a href="https://developer.forecast.io/">forecast.io</a> is a good one)</p>
+<p>Can you add another weather provider? (Hint: <a href="https://developer.forecast.io/">forecast.io</a> is a good one).</p>
 
-<p>Can you implement a timeout?</p>
-      </section>
-      <footer>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
-</html>
+<p>Can you implement a timeout, to cancel a query that is taking to long? (Hint: see <a href="http://openmirage.org/wiki/tutorial-lwt#Cancelling">Cancelling</a>).</p>
