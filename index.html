@@ -1,6 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Voila.GitHub.io by voila</title>
 
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>Untitled Document.md</title><style></style></head><body>
-<h1 id="weather-api-in-ocaml">Weather API in OCaml</h1>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Voila.GitHub.io</h1>
+        <p></p>
+
+
+        <p class="view"><a href="https://github.com/voila">View My GitHub Profile</a></p>
+
+      </header>
+
+
+<section>
+  <h1 id="weather-api-in-ocaml">Weather API in OCaml</h1>
 <p>I enjoyed Peter Bourgon&#39;s <a href="http://howistart.org/posts/go/1">How I Start: Go</a> article. Writing Go seemed easy and fun. It made me wonder: how fun would it be in OCaml? There&#39;s only one way to find out, read on!  (This post assumes a basic knowledge of OCaml.) </p>
 <p><em>Note: I&#39;ve copied a lot from the original post, ideas and words. Any mistake are my own.</em></p>
 <h2 id="what-is-ocaml-">What is OCaml ?</h2>
@@ -437,5 +462,13 @@ Like before, our temperature function averages the temperatures returned by the 
 <p>Can you add some error handling?  For instance, can you prevent the failure of one weather provider from aborting the whole computation ? (Hint: use Lwt.catch and change the type of temperature to : string -&gt; float option Lwt.t) .</p>
 <p>Can you add another weather provider? (Hint: <a href="https://developer.forecast.io/">forecast.io</a> is a good one).</p>
 <p>Can you implement a timeout, to cancel a query that is taking to long? (Hint: see <a href="http://openmirage.org/wiki/tutorial-lwt#Cancelling">Cancelling</a>).</p>
+</section>
 
-</body></html>
+      <footer>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
