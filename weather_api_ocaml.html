@@ -97,7 +97,7 @@ $ opam install lwt.2.4.6 cohttp.0.12.0
 <p><code>callback</code> takes a connection id, an HTTP request and a body. It dispatches on the request uri: &quot;/&quot; gets a hello response, anything else gets a 404.</p>
 <p>the last expression is the program main entry,  <code>make_server</code> returns an Lwt thread.
 <code>Lwt_unix.run</code> runs this thread until it terminates.</p>
-<p>To compile this program, we first create the following _tag file:</p>
+<p>To compile this program, we first create the following _tags file:</p>
 <pre><code>true: package(lwt), package(cohttp), package(cohttp.lwt)
 </code></pre><p>It lists all the packages we&#39;re using.
 Now ocamlbuild can find our dependencies, we can compile and run:</p>
