@@ -21,17 +21,33 @@ function is_v(t) { return t.type == 'var'; }
 function is_a(t) { return t.type == 'atom'; }
 function is_c(t) { return t.type == 'const'; }
 
+function is_cons(t) { return t.id == 'cons'; }
+function is_nil(t) { return t.id == 'nil'; }
+function is_list(t) { return t.id == 'nil' || t.id == "cons"; }
+
 function tid(t) {return t.id; }
 function ttype(t) {return t.type; }
 function params(t) {return t.params; }
 
+
+function pprintList(t){
+    if(is_nil(t))
+        return ''
+    else if(is_nil(t.params[1]))
+        return pprint(t.params[0]);
+    else
+        return pprint(t.params[0]) + ', ' + pprintList(t.params[1]);
+}
+
 function pprint(t){
     switch(t.type){
         case 'atom':
-          return t.id + '(' + 
-            t.params.map(function(t){ return pprint(t); }) + 
-            ')';
-
+          if(is_list(t))
+              return '[' + pprintList(t) + ']'; 
+          else 
+              return t.id + '(' + 
+              t.params.map(function(t){ return pprint(t); }) + 
+              ')';
         default:
            return t.id;
     }

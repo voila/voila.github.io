@@ -1,15 +1,15 @@
 <html>
 <head></head>
 <style>
-body { font-size:1.2em; } 
-#msg { border: 1px solid red; font-size:inherit;}
+body { font-size:1.1em; font-family: monospace} 
+#msg { font-size:inherit;}
 #prog { white-space:pre; } 
-textarea {font-size:inherit;}
+textarea {font-size:inherit; font-family: monospace}
 .hidden {visibility:hidden; position:absolute; height:0;}
 </style>
-<script src="javascripts/toylog_solve.js"></script>
-<script src="javascripts/toylog_parser.js"></script>
-<script src="javascripts/toylog_jquery.js"></script>
+<script src="solve.js"></script>
+<script src="parser.js"></script>
+<script src="jquery.js"></script>
 
 <script>
 
@@ -18,8 +18,8 @@ textarea {font-size:inherit;}
 
     // used to display different solutions incrementally
     function displaySol(lst){
-      console.log(lst)
-      $("#msg").append(lst.join([separator = '<br />']) + '<br />');
+      //console.log(lst)
+      $("#msg").append(lst.join([separator = '<br /><br />']) + '<br /><br />');
     }
 
     function nextSol(){
@@ -194,7 +194,7 @@ sudoku(Puzzle, Solution) :-
 
 <div id="zebra" class="hidden">
 <div class="prog">append(nil,L,L).
-append(cons(H,L1),L2,cons(H,L3)) :- append(L1,L2,L3).
+append([H|L1],L2,[H|L3]) :- append(L1,L2,L3).
 
 select3(X, [X|Tail], Tail).
 select3(Elem, [Head|Tail], [Head|Rest]) :-
@@ -214,17 +214,17 @@ member(X,[Y|T]) :- member(X,T).
 unif(X,X).
 
 zebra(Owns, Hs):- 
-      unif(Hs,    [ h(_,norwegian,_,_,_), _,  h(_,_,_,milk,_), _, _]), 
-      select( [ h(red,englishman,_,_,_),  h(_,swede,dog,_,_),
-                h(_,dane,_,tea,_),        h(_,german,_,_,prince) ], Hs),
-      select( [ h(_,_,birds,_,pallmall),  h(yellow,_,_,_,dunhill),
-                h(_,_,_,beer,bluemaster) ],                         Hs), 
-      left_of(  h(green,_,_,coffee,_),    h(white,_,_,_,_),         Hs),
-      next_to(  h(_,_,_,_,dunhill),       h(_,_,horse,_,_),         Hs),
-      next_to(  h(_,_,_,_,blend),         h(_,_,cats, _,_),         Hs),
-      next_to(  h(_,_,_,_,blend),         h(_,_,_,water,_),         Hs),
-      next_to(  h(_,norwegian,_,_,_),     h(blue,_,_,_,_),          Hs),
-      member(   h(_,Owns,zebra,_,_), Hs).
+  unif(Hs, [h(_,norwegian,_,_,_),_,h(_,_,_,milk,_),_,_]),
+  select([h(red,englishman,_,_,_),h(_,swede,dog,_,_),
+          h(_,dane,_,tea,_),h(_,german,_,_,prince)],Hs),
+  select([h(_,_,birds,_,pallmall),h(yellow,_,_,_,dunhill),
+          h(_,_,_,beer,bluemaster)],Hs),
+  left_of(h(green,_,_,coffee,_),h(white,_,_,_,_),Hs),
+  next_to(h(_,_,_,_,dunhill),h(_,_,horse,_,_),Hs),
+  next_to(h(_,_,_,_,blend),h(_,_,cats, _,_),Hs),
+  next_to(h(_,_,_,_,blend),h(_,_,_,water,_),Hs),
+  next_to(h(_,norwegian,_,_,_),h(blue,_,_,_,_),Hs),
+  member(h(_,Owns,zebra,_,_),Hs).
 
 </div>
 <div class="query">zebra(Who, Hs).
