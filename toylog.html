@@ -1,0 +1,235 @@
+<html>
+<head></head>
+<style>
+body { font-size:1.2em; } 
+#msg { border: 1px solid red; font-size:inherit;}
+#prog { white-space:pre; } 
+textarea {font-size:inherit;}
+.hidden {visibility:hidden; position:absolute; height:0;}
+</style>
+<script src="javascripts/toylog_solve.js"></script>
+<script src="javascripts/toylog_parser.js"></script>
+<script src="javascripts/toylog_jquery.js"></script>
+
+<script>
+
+    var parse = PARSER.parse;
+    //var assert = chai.assert;
+
+    // used to display different solutions incrementally
+    function displaySol(lst){
+      console.log(lst)
+      $("#msg").append(lst.join([separator = '<br />']) + '<br />');
+    }
+
+    function nextSol(){
+      return confirm("Next Solution?");
+    }
+    function ask(){
+      try {
+        var p = parse($("#prog").val()).clauses;
+        var g = parse($("#query").val()).clauses[0][0];
+        $("#msg").empty();
+        var s = solve(g, p, displaySol, nextSol);
+        $("#msg").append(s ? 'Yes' : 'No');
+      }
+      catch(e){
+       $("#msg").html(e.toString());
+       //console.log(e.toString());
+      }
+    }
+
+
+    // UI handlers
+    $(function(){
+       $("#ask").click(ask);
+
+       $("#examples").on('change', function() {
+           $("#msg").empty();
+           $("#prog").html($("#" + this.value + " .prog").html());
+           $("#query").html($("#" + this.value + " .query").html());
+       });
+    });
+
+</script>
+<body>
+
+<p>
+<select id="examples">
+    <option value="">Examples</option>
+    <option value="append">append</option>
+    <option value="gods">gods</option>
+    <option value="zebra">zebra</option>
+    <option value="sudoku">Sudoku 4x4</option>
+</select>
+</p>
+
+<div id="left-column">
+
+  <textarea id="prog" rows="15" cols="55">
+
+  </textarea> 
+  <br />
+</div> 
+<div id="right-column">
+  <textarea id="query" rows="7" cols="55">
+
+
+  </textarea>
+  <p><button id="ask">Ask</button></p>
+  
+  <p id="msg"></p>
+</div> 
+
+
+
+
+
+
+
+ 
+
+
+
+<div id="append" class="hidden">
+<div class="prog">append(nil,L,L).
+append([H|L1],L2,[H|L3]) :- append(L1,L2,L3).
+</div>
+<div class="query">append([1,2], [3,4], Y).
+</div>
+</div>
+
+<div id="gods" class="hidden">
+<div class="prog">mother(gaia,cronos).
+mother(rhea,zeus).
+mother(rhea,hades).
+father(zeus,pollux).
+father(cronos,zeus).
+father(ouranos,cronos).
+father(zeus,helene).
+father(zeus,castor).
+parent(X,Y) :- father(X,Y).
+parent(X,Y) :- mother(X,Y).
+grandparent(X,Z) :- parent(X,Y),parent(Y,Z).
+</div>
+<div class="query">grandparent(cronos,X).
+</div>
+</div>
+
+<div id="sudoku" class="hidden">
+<div class="prog">valid([]).
+valid([Head|Tail]) :- 
+  all_different(Head), 
+  valid(Tail).
+
+neq(1,2).
+neq(1,3).
+neq(1,4).
+neq(2,3).
+neq(2,4).
+neq(3,4).
+neq(2,1).
+neq(3,1).
+neq(4,1).
+neq(3,2).
+neq(4,2).
+neq(4,3).
+
+not_member(X,[]). 
+not_member(X,[Head|Tail]) :- 
+    neq(X,Head), 
+    not_member(X,Tail). 
+
+all_different([]).
+all_different([Head|Tail]) :- 
+    not_member(Head,Tail),
+    all_different(Tail). 
+
+mem(X,[X|T]).
+mem(X,[Y|T]) :- mem(X,T).   
+
+all_within([],_).
+all_within([Head|Tail],L) :-
+    mem(Head,L),
+    all_within(Tail,L).
+
+unif(X,X).
+   
+sudoku(Puzzle, Solution) :-
+  unif(Solution, Puzzle),
+  unif(Puzzle, [S11, S12, S13, S14, 
+            S21, S22, S23, S24, 
+            S31, S32, S33, S34, 
+            S41, S42, S43, S44]), 
+             
+  all_within(Solution, [1,2,3,4]),
+
+  unif(Row1    ,[S11, S12, S13, S14]),
+  unif(Row2    ,[S21, S22, S23, S24]),
+  unif(Row3    ,[S31, S32, S33, S34]),
+  unif(Row4    ,[S41, S42, S43, S44]), 
+  unif(Col1    ,[S11, S21, S31, S41]),
+  unif(Col2    ,[S12, S22, S32, S42]),
+  unif(Col3    ,[S13, S23, S33, S43]),
+  unif(Col4    ,[S14, S24, S34, S44]),
+  unif(Square1 ,[S11, S12, S21, S22]),
+  unif(Square2 ,[S13, S14, S23, S24]),
+  unif(Square3 ,[S31, S32, S41, S42]),
+  unif(Square4 ,[S33, S34, S43, S44]), 
+   
+  valid([Row1, Row2, Row3, Row4, 
+         Col1, Col2, Col3, Col4, 
+         Square1, Square2, Square3, Square4]).
+</div>
+<div class="query">sudoku([
+  4, 1, 2, 3,  
+  _, _, 4, _,
+  1, _, 3, _, 
+  3, 4, _, 2], Solution).
+
+</div>
+</div>
+
+
+
+<div id="zebra" class="hidden">
+<div class="prog">append(nil,L,L).
+append(cons(H,L1),L2,cons(H,L3)) :- append(L1,L2,L3).
+
+select3(X, [X|Tail], Tail).
+select3(Elem, [Head|Tail], [Head|Rest]) :-
+   select3(Elem, Tail, Rest).
+
+select([A|As],S):- select3(A,S,S1),select(As,S1).
+select([],_). 
+ 
+next_to(A,B,C):- left_of(A,B,C).
+next_to(A,B,C):- left_of(B,A,C).
+left_of(A,B,C):- append(_,[A|[B|_]],C).
+ 
+member(X,[X|T]).
+member(X,[Y|T]) :- member(X,T).  
+
+
+unif(X,X).
+
+zebra(Owns, Hs):- 
+      unif(Hs,    [ h(_,norwegian,_,_,_), _,  h(_,_,_,milk,_), _, _]), 
+      select( [ h(red,englishman,_,_,_),  h(_,swede,dog,_,_),
+                h(_,dane,_,tea,_),        h(_,german,_,_,prince) ], Hs),
+      select( [ h(_,_,birds,_,pallmall),  h(yellow,_,_,_,dunhill),
+                h(_,_,_,beer,bluemaster) ],                         Hs), 
+      left_of(  h(green,_,_,coffee,_),    h(white,_,_,_,_),         Hs),
+      next_to(  h(_,_,_,_,dunhill),       h(_,_,horse,_,_),         Hs),
+      next_to(  h(_,_,_,_,blend),         h(_,_,cats, _,_),         Hs),
+      next_to(  h(_,_,_,_,blend),         h(_,_,_,water,_),         Hs),
+      next_to(  h(_,norwegian,_,_,_),     h(blue,_,_,_,_),          Hs),
+      member(   h(_,Owns,zebra,_,_), Hs).
+
+</div>
+<div class="query">zebra(Who, Hs).
+</div>
+</div>
+
+
+</body>
